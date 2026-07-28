@@ -3,35 +3,32 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { message } = req.body;
-  const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
-  if (!GROQ_API_KEY) {
-    return res.status(500).json({ error: 'API key missing' });
-  }
-
   try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
+    const { message } = req.body;
+
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+,
       headers: {
-        "Authorization": `Bearer ${GROQ_API_KEY}`,
-        "Content-Type": "application/json"
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
+        model: 'llama-3.1-8b-instant',
         messages: [
-          {role: "system", content: "You are PAPISO AI from Lesotho. Reply in Sesotho first. If user writes English, reply in English. Be helpful and friendly."},
-          { role: "user", content: message }
-        ],
-        temperature: 0.7,
-        max_tokens: 500
+          { role: 'system', content: 'O bitsoa Papiso AI. Araba ka Sesotho se setle, se mosa le se thusang.' },
+          { role: 'user', content: message }
+        ]
       })
     });
 
-    const data = await response.json();
-    const reply = data.choices[0].message.content;
+    const data = await groqResponse.json();
+    
+    const reply = data.choices?.[0]?.message?.content || "Maswabi, ha ke a khona ho araba hona joale. Leka hape";
+    
     res.status(200).json({ reply });
+
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get AI response' });
+    res.status(500).json({ error: error.message });
   }
 }
