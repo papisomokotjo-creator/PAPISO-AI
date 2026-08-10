@@ -1,34 +1,29 @@
-export default async function handler(req, res) {
-  if (req.method!== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+import Groq from "groq-sdk";
 
-  try {
-    const { message } = req.body;
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY, // This pulls from Vercel Environment Variables
+});
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type": "application/json"
+export async function POST(req) {
+  const { message } = await req.json();
+
+  const chatCompletion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: "You are Papiso-AI. You can chat in any language. Be helpful and friendly."
       },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [
-          {role: "system", content: "You are PAPISO AI from Lesotho. Reply in Sesotho first. If user writes English, reply in English. Be helpful and friendly."},
-          { role: "user", content: message }
-        ],
-        temperature: 0.7,
-        max_tokens: 500
-      })
-    });
+      {
+        role: "user", 
+        content: message,
+      }
+    ],
+    model: "qwen/qwen3.6-27b", // the multilingual model we picked
+    temperature: 0.7,
+    max_tokens: 1024,
+  });
 
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "Maswabi, ha ke a khona ho araba hona jwale. Leka hape";
-    
-    res.status(200).json({ reply });
-
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to get AI response' });
-  }
+  return Response.json({ 
+    reply: chatCompletion.choices[0]?.message?.content || "No reply" 
+  });
 }
