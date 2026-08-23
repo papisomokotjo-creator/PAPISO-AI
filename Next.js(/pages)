@@ -1,13 +1,13 @@
-import type { AppProps } from 'next/app';
-import { SpeedInsights } from '@vercel/speed-insights/next';
- 
-function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <>
-      <Component {...pageProps} />
-      <SpeedInsights />
-    </>
-  );
+{
+  "name": "papiso-ai",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build", 
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "^18",
+    "react-dom": "^18"
+  }
 }
- 
-export default MyApp;
